@@ -345,3 +345,34 @@ llama-endpoint-paul-predictor-00002-deployment   0/0     0            0         
 ```
 
 This is a bad profile, and should have been removed.
+
+
+### Model Download hangs
+
+```
+kubectl  logs -f model-registry-v2-65bc7846f8-p6kzh -c model-registry-v2 -n mlx --kubeconfig=model-registry-ml-66ae42c5-565-kubeconfig.yaml
+```
+
+```
+kubectl  logs -f model-registry-v2-65bc7846f8-6bbzb -c model-registry-v2 -n mlx --kubeconfig=model-registry-ml-66ae42c5-565-kubeconfig.yaml
+```
+
+```
+kubectl delete pod model-registry-v2-65bc7846f8-p6kzh -n mlx --kubeconfig=model-registry-ml-66ae42c5-565-kubeconfig.yaml
+```
+
+```
+kubectl delete pod model-registry-v2-65bc7846f8-6bbzb -n mlx --kubeconfig=model-registry-ml-66ae42c5-565-kubeconfig.yaml
+```
+
+Get logs from namespace:
+
+```
+kubectl get pods -n mlx --kubeconfig=model-registry-ml-66ae42c5-565-kubeconfig.yaml
+```
+
+Kill:
+
+```
+kubectl delete pod model-registry-v2-65bc7846f8-vs5q2  model-registry-v2-65bc7846f8-wjtmj -n mlx --kubeconfig=model-registry-ml-66ae42c5-565-kubeconfig.yaml
+```
