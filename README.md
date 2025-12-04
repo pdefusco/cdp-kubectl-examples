@@ -49,6 +49,70 @@ Labels:           app=model-registry-v1
 
 ```
 
+* Registry is deployed in Azure via UI with Public Load Balancer and no Subnets. Registry installation hangs with error ```Failed to install the AI application to Model Registry : containers could not become ready for resourceCrn```.
+
+Events & Logs from Registry UI
+
+```
+2025-12-04T04:38:38.558Z	Service: MLXControlPlaneUpgrade, Message: Successfully loaded entitlements
+2025-12-04T04:38:38.588Z	Service: MLXControlPlane, Message: Finish getting Domain Name.
+2025-12-04T04:38:38.592Z	Service: MLXControlPlane, Message: Finish parsing cloud storage info.
+2025-12-04T04:38:38.634Z	Service: Vault, Message: Finish reading credentials.
+2025-12-04T04:38:39.644Z	Service: MLXControlPlane, Message: Pre-flight validations result 'PASSED'. 'Managed Identity has Storage Account Contributor role on the subscription: Managed Identity has Storage Account Contributor role on the subscription'
+2025-12-04T04:38:39.648Z	Service: MLXControlPlane, Message: Pre-flight validations result 'SKIPPED'. 'worker subnet validation skipped.'
+2025-12-04T04:38:44.258Z	Service: MLXControlPlane, Message: Pre-flight validations result 'PASSED'. 'The provisioning validations have passed, but some checks were skipped'
+2025-12-04T04:38:44.301Z	Service: MLXControlPlane, Message: Pre-flight validations result 'PASSED'. 'User role validations passed.'
+2025-12-04T04:38:44.306Z	Service: MLXControlPlane, Message: Pre-flight validations result 'SKIPPED'. 'AWSCustomerKey validation skipped.'
+2025-12-04T04:38:44.310Z	Service: MLXControlPlane, Message: Pre-flight validations result 'SKIPPED'. 'Private cluster validation skipped.'
+2025-12-04T04:38:44.314Z	Service: MLXControlPlane, Message: Pre-flight validations result 'SKIPPED'. 'AWS pod CIDR validation skipped.'
+2025-12-04T04:38:44.318Z	Service: MLXControlPlane, Message: Pre-flight validations result 'SKIPPED'. 'loadbalancer subnet validation skipped.'
+2025-12-04T04:39:18.481Z	Service: Liftie, Message: Checking if cluster for resource already exists.
+2025-12-04T04:39:18.602Z	Service: Liftie, Message: Sending request to the provisioner to create cluster for resource.
+2025-12-04T04:39:24.331Z	Service: MLXControlPlane, Message: Creation of cluster for workbench succeeded. ClusterId is 'liftie-tqtvywdq'
+2025-12-04T04:39:24.441Z	Service: Liftie, Message: Create cluster request sent to the provisioner.
+2025-12-04T04:39:24.552Z	Service: Liftie, Message: Start updating the cluster id for resource.
+2025-12-04T04:39:24.773Z	Service: Liftie, Message: Finished updating the cluster id for resource.
+2025-12-04T04:39:24.889Z	Service: Liftie, Message: Waiting for cluster to become ready.
+2025-12-04T04:54:42.317Z	Service: Liftie, Message: Cluster has been successfully provisioned for Cloudera AI resource.
+2025-12-04T04:58:12.371Z	Service: MLXControlPlane, Message: Starting to fetch domains for Model Registry.
+2025-12-04T04:58:12.647Z	Service: MLXControlPlane, Message: Finished fetching domains for Model Registry.
+2025-12-04T04:58:12.891Z	Service: MLXControlPlane, Message: Start installing the AI application to Model Registry.
+2025-12-04T04:58:28.520Z	Service: MLXControlPlane, Message: Finish getting environment info.
+2025-12-04T04:58:28.547Z	Service: MLXControlPlane, Message: Finish parsing cloud storage info.
+2025-12-04T04:59:59.866Z	Service: MLXControlPlane, Message: Finish creating SDX configuration.
+2025-12-04T04:59:59.869Z	Service: MLXControlPlane, Message: Finish creating AI Operations configuration
+2025-12-04T05:31:27.309Z	Service: MLXControlPlane, Message: Failed to install the AI application to Model Registry : containers could not become ready for resourceCrn 'crn:cdp:ml:us-west-1:558bc1d2-8867-4357-8524-311d51259233:model_registry:8a5353cb-355e-4134-b9d8-455e0c332173'
+2025-12-04T05:32:09.988Z	Service: MLXControlPlane, Message: Starting to fetch domains for Model Registry.
+2025-12-04T05:32:10.250Z	Service: MLXControlPlane, Message: Finished fetching domains for Model Registry.
+2025-12-04T05:32:10.495Z	Service: MLXControlPlane, Message: Start installing the AI application to Model Registry.
+```
+
+View the open ports of all services in all namespaces.
+
+```
+% kubectl get services -A --kubeconfig=model-registry-ml-682c0917-09d-kubeconfig.yaml
+NAMESPACE              NAME                                   TYPE           CLUSTER-IP     EXTERNAL-IP      PORT(S)                                                                      AGE
+default                kubernetes                             ClusterIP      10.0.0.1       <none>           443/TCP                                                                      61m
+istio-system           istiod                                 ClusterIP      10.0.17.119    <none>           15010/TCP,15012/TCP,443/TCP,15023/TCP                                        55m
+istio-system           mlx-istio-ingressgateway               LoadBalancer   10.0.203.33    64.236.126.180   15021:32033/TCP,80:31019/TCP,443:32194/TCP,15012:32175/TCP,15443:32718/TCP   41m
+knox                   knox                                   ClusterIP      10.0.251.159   <none>           8443/TCP,8444/TCP,8445/TCP                                                   46m
+kube-system            azure-wi-webhook-webhook-service       ClusterIP      10.0.128.66    <none>           443/TCP                                                                      61m
+kube-system            cdp-coredns-updater                    ClusterIP      10.0.108.37    <none>           8080/TCP                                                                     55m
+kube-system            kube-dns                               ClusterIP      10.0.0.10      <none>           53/UDP,53/TCP                                                                60m
+kube-system            metrics-server                         ClusterIP      10.0.212.152   <none>           443/TCP                                                                      60m
+kubernetes-dashboard   kubernetes-dashboard-api               ClusterIP      10.0.144.235   <none>           8000/TCP                                                                     56m
+kubernetes-dashboard   kubernetes-dashboard-auth              ClusterIP      10.0.188.186   <none>           8000/TCP                                                                     56m
+kubernetes-dashboard   kubernetes-dashboard-kong-proxy        ClusterIP      10.0.212.31    <none>           443/TCP                                                                      56m
+kubernetes-dashboard   kubernetes-dashboard-metrics-scraper   ClusterIP      10.0.71.18     <none>           8000/TCP                                                                     56m
+kubernetes-dashboard   kubernetes-dashboard-web               ClusterIP      10.0.32.111    <none>           8000/TCP                                                                     56m
+metering               cdp-meteringv2-headless                ClusterIP      None           <none>           50051/TCP,8982/TCP                                                           51m
+mlx                    model-registry-db                      ClusterIP      10.0.217.66    <none>           5432/TCP                                                                     41m
+mlx                    model-registry-v1                      ClusterIP      10.0.113.63    <none>           8188/TCP                                                                     41m
+mlx                    model-registry-v2                      ClusterIP      10.0.224.162   <none>           8188/TCP                                                                     41m
+```
+
+
+
 ### AI Inference Service
 
 ```
